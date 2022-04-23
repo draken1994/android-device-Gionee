@@ -1,4 +1,5 @@
 /dev/null                 0666   root       root
+/dev/null                 0666   root       root
 /dev/zero                 0666   root       root
 /dev/full                 0666   root       root
 /dev/ptmx                 0666   root       root
@@ -17,20 +18,16 @@
 /dev/dkb                  0660   root       system
 /dev/seccfg               0660   root       system
 /dev/pro_info             0660	 root	    system
+/dev/logo				  0660 	 root 		system
 /dev/otp 		  0660	 root	    nvram
-/dev/block/mmcblk0p1	0640	 root	    system
 /dev/nvram 		   0660	 root	    system
 /dev/misc		   0660	 root	    system
+/dev/misc2		   0660	 root	    system
 /dev/block/mmcblk0	   0660	 root	    system
 /dev/block/mmcblk0boot0	   0660	 root	    system
 
 # change misc-sd to 0660 root system
 /dev/misc-sd              0660   root       system
-
-#connectivity
-# Create char device file for WMT, GPS, BT, FM, WIFI
-/dev/stpwmt              0660  system      system
-/dev/wmtdetect           0660  system      system
 
 # BT
 /dev/stpbt               0660  bluetooth   net_bt_stack
@@ -135,6 +132,9 @@
 /dev/eemcs*               0660   radio      radio
 /dev/ccci_pcm_rx          0660   media      media
 /dev/ccci_pcm_tx          0660   media      media
+
+#powerkey monitor hang
+/dev/kick_powerkey        0600   system     system
 
 # SGX device node
 /dev/pvrsrvkm             0666   root       root

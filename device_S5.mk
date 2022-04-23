@@ -7,9 +7,9 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 # PRODUCT_DEX_PREOPT_DEFAULT_FLAGS := --compiler-filter=interpret-only
 # $(call add-product-dex-preopt-module-config,services,--compiler-filter=space)
 
-$(call inherit-product-if-exists, vendor/huawei/g750t01/g750t01-vendor.mk)
+$(call inherit-product-if-exists, vendor/Gionee/S5/S5-vendor.mk)
 
-LOCAL_PATH := device/huawei/g750t01
+LOCAL_PATH := device/Gionee/S5
 
 PRODUCT_CHARACTERISTICS := default
 
@@ -155,8 +155,8 @@ PRODUCT_PROPERTY_OVERRIDES := \
 	persist.service.debuggable=1 \
 	persist.mtk.wcn.combo.chipid=-1
 
-PRODUCT_NAME := full_g750t01
-PRODUCT_DEVICE := g750t01
+PRODUCT_NAME := full_S5
+PRODUCT_DEVICE := S5
 
 # Boot animation
 TARGET_SCREEN_HEIGHT := 1280
