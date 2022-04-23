@@ -1,0 +1,188 @@
+diff --git a/src/java/com/android/internal/telephony/GsmCdmaPhone.java b/src/java/com/android/internal/telephony/GsmCdmaPhone.java
+index c9a1c7e..6301ef5 100644
+--- a/src/java/com/android/internal/telephony/GsmCdmaPhone.java
++++ b/src/java/com/android/internal/telephony/GsmCdmaPhone.java
+@@ -1465,6 +1465,7 @@ public class GsmCdmaPhone extends Phone {
+         }
+     }
+ 
++
+     @Override
+     public String getMeid() {
+         if (isPhoneTypeGsm()) {
+@@ -1998,7 +1999,12 @@ public class GsmCdmaPhone extends Phone {
+             // Complete pending USSD
+ 
+             if (isUssdRelease) {
+-                found.onUssdRelease();
++                // MTK weirdness
++                if(ussdMessage != null) {
++                    found.onUssdFinished(ussdMessage, isUssdRequest);
++                } else {
++                    found.onUssdRelease();
++                }
+             } else if (isUssdError) {
+                 found.onUssdFinishedError();
+             } else {
+@@ -2752,6 +2758,7 @@ public class GsmCdmaPhone extends Phone {
+ 
+     private boolean isManualSelProhibitedInGlobalMode() {
+         boolean isProhibited = false;
++		
+         final String configString = getContext().getResources().getString(com.android.internal.
+                 R.string.prohibit_manual_network_selection_in_gobal_mode);
+ 
+diff --git a/src/java/com/android/internal/telephony/Phone.java b/src/java/com/android/internal/telephony/Phone.java
+index 772aa39..e041b5b 100644
+--- a/src/java/com/android/internal/telephony/Phone.java
++++ b/src/java/com/android/internal/telephony/Phone.java
+@@ -1856,22 +1856,33 @@ public abstract class Phone extends Handler implements PhoneInternalInterface {
+         int modemRaf = getRadioAccessFamily();
+         int rafFromType = RadioAccessFamily.getRafFromNetworkType(networkType);
+ 
+-        if (modemRaf == RadioAccessFamily.RAF_UNKNOWN
+-                || rafFromType == RadioAccessFamily.RAF_UNKNOWN) {
+-            Rlog.d(LOG_TAG, "setPreferredNetworkType: Abort, unknown RAF: "
+-                    + modemRaf + " " + rafFromType);
+-            if (response != null) {
+-                CommandException ex;
+-
+-                ex = new CommandException(CommandException.Error.GENERIC_FAILURE);
+-                AsyncResult.forMessage(response, null, ex);
+-                response.sendToTarget();
+-            }
+-            return;
+-        }
++        int filteredType = 0;
+ 
+-        int filteredRaf = (rafFromType & modemRaf);
+-        int filteredType = RadioAccessFamily.getNetworkTypeFromRaf(filteredRaf);
++        switch (rafFromType) {
++        case 101902:
++                filteredType = RILConstants.NETWORK_MODE_WCDMA_PREF;
++                break;
++        case 65542:
++                filteredType = RILConstants.NETWORK_MODE_GSM_ONLY;
++                break;
++        case 36360:
++                filteredType = RILConstants.NETWORK_MODE_WCDMA_ONLY;
++                break;
++        default:
++                if ((modemRaf == RadioAccessFamily.RAF_UNKNOWN
++                        || rafFromType == RadioAccessFamily.RAF_UNKNOWN)) {
++                        Rlog.d(LOG_TAG, "setPreferredNetworkType: Abort, unknown RAF: " +
++                         modemRaf + " " + rafFromType);
++                        if (response != null) {
++                            CommandException ex;
++
++                                ex = new CommandException(CommandException.Error.GENERIC_FAILURE);
++                                AsyncResult.forMessage(response, null, ex);
++                                response.sendToTarget();
++                        }
++                        return;
++                }
++        }
+ 
+         Rlog.d(LOG_TAG, "setPreferredNetworkType: networkType = " + networkType
+                 + " modemRaf = " + modemRaf
+diff --git a/src/java/com/android/internal/telephony/SubscriptionController.java b/src/java/com/android/internal/telephony/SubscriptionController.java
+index 5bdfa03..6a6f577 100644
+--- a/src/java/com/android/internal/telephony/SubscriptionController.java
++++ b/src/java/com/android/internal/telephony/SubscriptionController.java
+@@ -262,7 +262,14 @@ public class SubscriptionController extends ISub.Stub {
+          // FIXME: Remove if listener technique accepted.
+          broadcastSimInfoContentChanged();
+      }
+-
++	 
++     private boolean isNumeric(String str) {
++         for (char c : str.toCharArray()) {
++             if (!Character.isDigit(c)) return false;
++         }
++         return true;
++     }
++	 
+     /**
+      * New SubInfoRecord instance and fill in detail info
+      * @param cursor
+@@ -306,6 +313,11 @@ public class SubscriptionController extends ISub.Stub {
+                     + " userNwMode:" + userNwMode);
+         }
+ 
++        if (isNumeric(carrierName)) {
++            carrierName = displayName;
++            logd("[getSubInfoRecord] carrierName changed to: " + displayName);
++        }
++		
+         // If line1number has been set to a different number, use it instead.
+         String line1Number = mTelephonyManager.getLine1Number(id);
+         if (!TextUtils.isEmpty(line1Number) && !line1Number.equals(number)) {
+diff --git a/src/java/com/android/internal/telephony/SubscriptionInfoUpdater.java b/src/java/com/android/internal/telephony/SubscriptionInfoUpdater.java
+index 233ee65..50a03b7 100644
+--- a/src/java/com/android/internal/telephony/SubscriptionInfoUpdater.java
++++ b/src/java/com/android/internal/telephony/SubscriptionInfoUpdater.java
+@@ -324,7 +324,7 @@ public class SubscriptionInfoUpdater extends Handler {
+                         mIccId[slotId] = ICCID_STRING_FOR_NO_SIM;
+                     }
+                 } else {
+-                    mIccId[slotId] = ICCID_STRING_FOR_NO_SIM;
++                    mIccId[slotId] = IccConstants.FAKE_ICCID;
+                     logd("Query IccId fail: " + ar.exception);
+                 }
+                 logd("sIccId[" + slotId + "] = " + mIccId[slotId]);
+diff --git a/src/java/com/android/internal/telephony/uicc/IccConstants.java b/src/java/com/android/internal/telephony/uicc/IccConstants.java
+index 01c3570..515d9be 100644
+--- a/src/java/com/android/internal/telephony/uicc/IccConstants.java
++++ b/src/java/com/android/internal/telephony/uicc/IccConstants.java
+@@ -122,4 +122,7 @@ public interface IccConstants {
+ 
+     //UICC access
+     static final String DF_ADF = "7FFF";
++
++    //CM-Specific : Fake ICCID
++    static final String FAKE_ICCID = "00000000000001";	
+ }
+diff --git a/src/java/com/android/internal/telephony/uicc/RuimRecords.java b/src/java/com/android/internal/telephony/uicc/RuimRecords.java
+index af7d5bc..af1a3fd 100644
+--- a/src/java/com/android/internal/telephony/uicc/RuimRecords.java
++++ b/src/java/com/android/internal/telephony/uicc/RuimRecords.java
+@@ -684,11 +684,13 @@ public class RuimRecords extends IccRecords {
+                 data = (byte[])ar.result;
+ 
+                 if (ar.exception != null) {
+-                    break;
++                    mIccId = FAKE_ICCID;
++                    mFullIccId = FAKE_ICCID;
++                }
++                else {
++	                mIccId = IccUtils.bcdToString(data, 0, data.length);
++                        mFullIccId = IccUtils.bchToString(data, 0, data.length);
+                 }
+-
+-                mIccId = IccUtils.bcdToString(data, 0, data.length);
+-                mFullIccId = IccUtils.bchToString(data, 0, data.length);
+ 
+                 log("iccid: " + SubscriptionInfo.givePrintableIccid(mFullIccId));
+ 
+diff --git a/src/java/com/android/internal/telephony/uicc/SIMRecords.java b/src/java/com/android/internal/telephony/uicc/SIMRecords.java
+index ccae4b3..b1a8cbd 100644
+--- a/src/java/com/android/internal/telephony/uicc/SIMRecords.java
++++ b/src/java/com/android/internal/telephony/uicc/SIMRecords.java
+@@ -900,11 +900,13 @@ public class SIMRecords extends IccRecords {
+                 data = (byte[])ar.result;
+ 
+                 if (ar.exception != null) {
+-                    break;
++                    mIccId = FAKE_ICCID;
++                    mFullIccId = FAKE_ICCID;
++                }
++                else {
++                    mIccId = IccUtils.bcdToString(data, 0, data.length);
++                    mFullIccId = IccUtils.bchToString(data, 0, data.length);
+                 }
+-
+-                mIccId = IccUtils.bcdToString(data, 0, data.length);
+-                mFullIccId = IccUtils.bchToString(data, 0, data.length);
+ 
+                 log("iccid: " + SubscriptionInfo.givePrintableIccid(mFullIccId));
+ 
