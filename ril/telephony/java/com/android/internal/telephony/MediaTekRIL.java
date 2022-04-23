@@ -38,8 +38,10 @@ import java.util.ArrayList;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.android.internal.telephony.uicc.IccUtils;
 import com.android.internal.telephony.uicc.IccRecords;
 import com.android.internal.telephony.uicc.UiccController;
+import com.android.internal.telephony.uicc.IccRefreshResponse;
 
 public class MediaTekRIL extends RIL implements CommandsInterface {
 
@@ -198,12 +200,12 @@ public class MediaTekRIL extends RIL implements CommandsInterface {
     int mSimId = 0;
 
 
-    public MediaTekRIL(Context context, int networkMode, int cdmaSubscription) {
-	    super(context, networkMode, cdmaSubscription, null);
+     public MediaTekRIL(Context context, int preferredNetworkType, int cdmaSubscription) {
+	    super(context, preferredNetworkType, cdmaSubscription, null);
     }
 
-    public MediaTekRIL(Context context, int networkMode, int cdmaSubscription, Integer instanceId) {
-	    super(context, networkMode, cdmaSubscription, instanceId);
+    public MediaTekRIL(Context context, int preferredNetworkType, int cdmaSubscription, Integer instanceId) {
+	    super(context, preferredNetworkType, cdmaSubscription, instanceId);
     }
 
     public static byte[] hexStringToBytes(String s) {
@@ -851,6 +853,19 @@ public class MediaTekRIL extends RIL implements CommandsInterface {
     }
 
     // Override setupDataCall as the MTK RIL needs 8th param CID (hardwired to 1?)
+	 @Override
+    protected Object
+    responseSimRefresh(Parcel p) {
+        IccRefreshResponse response = new IccRefreshResponse();
+
+        response.refreshResult = p.readInt();
+        String rawefId = p.readString();
+        response.efId   = rawefId == null ? 0 : Integer.parseInt(rawefId);
+        response.aid = p.readString();
+
+        return response;
+    }
+	
     @Override
     public void
     setupDataCall(int radioTechnology, int profile, String apn,
@@ -1101,20 +1116,6 @@ public class MediaTekRIL extends RIL implements CommandsInterface {
                 Rlog.i(RILJ_LOG_TAG, "(" + mInstanceId + ") Connected to '"
                         + rilSocket + "' socket");
 
-                /* Compatibility with qcom's DSDS (Dual SIM) stack */
-                if (needsOldRilFeature("qcomdsds")) {
-                    String str = "SUB1";
-                    byte[] data = str.getBytes();
-                    try {
-                        mSocket.getOutputStream().write(data);
-                        Rlog.i(RILJ_LOG_TAG, "Data sent!!");
-                    } catch (IOException ex) {
-                            Rlog.e(RILJ_LOG_TAG, "IOException", ex);
-                    } catch (RuntimeException exc) {
-                        Rlog.e(RILJ_LOG_TAG, "Uncaught exception ", exc);
-                    }
-                }
-
                 int length = 0;
                 try {
                     InputStream is = mSocket.getInputStream();
@@ -1209,4 +1210,12 @@ public class MediaTekRIL extends RIL implements CommandsInterface {
         rr.mParcel.writeInt(allowed ? 1 : 0);
         send(rr);
     }
+        @Override
+    public void iccIOForApp (int command, int fileid, String path, int p1, int p2, int p3,
+            String data, String pin2, String aid, Message result) {
+        if (command == 0xc0 && p3 == 0) {
+            Rlog.i("MediaTekRIL", "Override the size for the COMMAND_GET_RESPONSE 0 => 15");
+            p3 = 15;
+        }
+        super.iccIOForApp(command, fileid, path, p1, p2, p3, data, pin2, aid, result);	
 }
