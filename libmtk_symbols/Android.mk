@@ -1,5 +1,4 @@
-#
-# Copyright (C) 2008 The Android Open Source Project
+# Copyright (C) 2015 The CyanogenMod Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,19 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-ifeq ($(TARGET_BOOTLOADER_BOARD_NAME),mt6592)
 
-LOCAL_PATH := $(my-dir)
-
+LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
-LOCAL_CFLAGS += $(LIBLOG_CFLAGS)
-LOCAL_MODULE := libxlog
-LOCAL_SRC_FILES := xlog.c mtkaudio.cpp MediatekHacks.cpp
-LOCAL_C_INCLUDES += frameworks/av/media/mtp/ system/core/include/ frameworks/rs/server/ frameworks/av/include/ hardware/libhardware/include/
-LOCAL_SHARED_LIBRARIES := libcutils liblog libutils libbinder
+LOCAL_SRC_FILES := \
+    crypto_malloc.c \
+    mtk_wvm.cpp \
+    mtk_ui.cpp \
+    mtk_ril.cpp \
+    icu51.c \
+    icu53.c \
+    icu55.c
+
+LOCAL_SHARED_LIBRARIES := libbinder liblog libicuuc libui libcrypto
+LOCAL_MODULE := libmtk_symbols
+LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 
 include $(BUILD_SHARED_LIBRARY)
-
-endif
