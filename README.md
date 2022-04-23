@@ -27,3 +27,9 @@ Services requires root:
 
   To see: 
     [Skip_network_validation](http://github.com/ferhung/Skip_network_validation)
+JACK_SERVER_VM_ARGUMENTS="-Dfile.encoding=UTF-8 -XX:+TieredCompilation -Xmx4096m"
+
+export PATH=~/bin:$PATH
+export EXPERIMENTAL_USE_JAVA8=true
+export USE_CCACHE=1
+export LC_ALL=C
