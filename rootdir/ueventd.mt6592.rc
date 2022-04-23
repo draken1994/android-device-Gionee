@@ -183,3 +183,6 @@
 /dev/touch              0660   root       system
 /dev/hotknot             0660    root system
 
+#powerkey monitor hang
+/dev/kick_powerkey        0600   system     system
+
