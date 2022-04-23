@@ -1,7 +1,7 @@
 # inherit from the proprietary version
--include vendor/huawei/g750t01/BoardConfigVendor.mk
+-include vendor/Gionee/S5/BoardConfigVendor.mk
 
-LOCAL_PATH := device/huawei/g750t01
+LOCAL_PATH := device/Gionee/S5
 
 # Board
 TARGET_BOARD_PLATFORM := mt6592
@@ -27,7 +27,7 @@ DONT_DEXPREOPT_PREBUILTS := true
 TARGET_BOOTLOADER_BOARD_NAME := mt6592
 
 # Assert
-TARGET_OTA_ASSERT_DEVICE := g750t01,G750-T01
+TARGET_OTA_ASSERT_DEVICE := S5
 
 # MTK HARDWARE
 BOARD_HAS_MTK_HARDWARE := true
@@ -38,7 +38,7 @@ COMMON_GLOBAL_CPPFLAGS += -DMTK_HARDWARE
 BLOCK_BASED_OTA :=false
 
 # RIL
-BOARD_RIL_CLASS := ../../../device/huawei/g750t01/ril/
+BOARD_RIL_CLASS := ../../../device/Gionee/S5/ril/
 
 BOARD_CONNECTIVITY_VENDOR := MediaTek
 BOARD_CONNECTIVITY_MODULE := conn_soc
@@ -66,9 +66,15 @@ TARGET_RUNNING_WITHOUT_SYNC_FRAMEWORK := true
 BOARD_KERNEL_CMDLINE :=
 BOARD_KERNEL_BASE := 0x10000000
 BOARD_KERNEL_PAGESIZE := 2048
-TARGET_PREBUILT_KERNEL := $(LOCAL_PATH)/kernel
-BOARD_CUSTOM_BOOTIMG_MK := $(LOCAL_PATH)/MTKbootimg.mk
+TARGET_PREBUILT_KERNEL := device/Gionee/S5/kernel
+BOARD_CUSTOM_BOOTIMG_MK := device/Gionee/S5/bootimg.mk
 BOARD_CUSTOM_BOOTIMG := true
+
+# Display
+TARGET_BOOTANIMATION_MULTITHREAD_DECODE := true
+
+# Blobs to preload
+TARGET_LDPRELOAD := libxlog.so:libmtk_symbols.so
 
 # Recovery
 TARGET_RECOVERY_FSTAB := $(LOCAL_PATH)/rootdir/recovery.fstab
@@ -77,9 +83,9 @@ TARGET_USE_CUSTOM_LUN_FILE_PATH := "/sys/devices/virtual/android_usb/android0/f_
 
 # TWRP stuff
 #RECOVERY_VARIANT := twrp
-DEVICE_RESOLUTION := 720x1280
-TARGET_SCREEN_HEIGHT := 1280
-TARGET_SCREEN_WIDTH := 720
+DEVICE_RESOLUTION := 1080x1920
+TARGET_SCREEN_HEIGHT := 1920
+TARGET_SCREEN_WIDTH := 1080
 TW_THEME := portrait_hdpi
 RECOVERY_GRAPHICS_USE_LINELENGTH := true
 RECOVERY_SDCARD_ON_DATA := true
@@ -128,7 +134,7 @@ BOARD_EGL_NEEDS_FNW := true
 TARGET_REQUIRES_SYNCHRONOUS_SETSURFACE := true
 
 # Selinux
-BOARD_SEPOLICY_DIRS += device/huawei/g750t01/sepolicy
+BOARD_SEPOLICY_DIRS += device/Gionee/S5/sepolicy
 
 # WIFI
 WPA_SUPPLICANT_VERSION := VER_0_8_X
