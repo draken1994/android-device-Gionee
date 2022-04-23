@@ -6,6 +6,13 @@ on early-init
     mount debugfs /sys/kernel/debug /sys/kernel/debug
     setprop ro.mtk.hardware mt6592
 
+on charger
+    mount ext4 /emmc@android /system ro wait
+    start servicemanager
+
+    # disable USB
+    write /sys/devices/platform/mt_usb/cmode 0	
+
 on init
     export LD_PRELOAD "/system/lib/libxlog.so /system/lib/libmt6592.so"
         
@@ -13,8 +20,8 @@ on init
     symlink /sdcard /mnt/sdcard
     symlink /sdcard /storage/sdcard0
 
-    # if primary storage is physical, set ro.vold.primary_physical to 1
-    # setprop ro.vold.primary_physical 1
+    if primary storage is physical, set ro.vold.primary_physical to 1
+    setprop ro.vold.primary_physical 1
 
     mkdir /protect_f 0771 system system
     mkdir /protect_s 0771 system system

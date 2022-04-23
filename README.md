@@ -1,20 +1,16 @@
 ----Thanks for xen0n, who are contributing to the working CyanogenMod of MTK hardware.---
 # CyanogenMod 13.0
 
-This is a device tree for huawei g750t01 which is based on MT6592 SoC. Powered by ferhung.
+This is a device tree for huawei S5 which is based on MT6592 SoC. Powered by ferhung.
 # Build
 
-* init
-  Sync CyanogenMod source:
-
-        # repo init -u git://github.com/ferhung-mtk/android.git -b cm-13.0        
-        # repo sync
+*
 
 * full build
         
         # source build/envsetup.sh
 
-        # brunch cm_g750t01-userdebug
+        # brunch lineage_S5-userdebug
 
 # Limitations
 
