@@ -16,12 +16,9 @@ ifeq ($(TARGET_BOOTLOADER_BOARD_NAME),mt6592)
 ifneq ($(BOARD_HAVE_BLUETOOTH_MTK),)
 
 LOCAL_PATH := $(call my-dir)
-
 include $(CLEAR_VARS)
 
-LOCAL_C_INCLUDES :=  \
-	system/bt/hci/include  \
-	$(LOCAL_PATH)
+LOCAL_C_INCLUDES := system/bt/hci/include
 
 LOCAL_CFLAGS := -g -c -W -Wall -O2 -D_POSIX_SOURCE
 
