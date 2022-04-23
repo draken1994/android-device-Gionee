@@ -272,6 +272,8 @@
     <bool name="config_enableAutoPowerModes">true</bool>
     
     <integer name="config_deviceHardwareKeys">7</integer>
+	 <!-- IpReachability monitor enable/Disable
+    <bool translatable="false" name="config_wifi_ipreachability_monitor">false</bool> -->
     
     <!-- Performance profiles -->
 	<!--
